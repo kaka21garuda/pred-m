@@ -1,13 +1,13 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Market is ReentrancyGuard {
+contract Market is ReentrancyGuard, Ownable {
     string public question; // the market question
     uint256 public endTime; // When the market closes
-    address public creator; // Who created the market
     bool public resolved; // Has the market been resolved?
     bool public outcome; // The final outcome (if resolved)
 
@@ -15,18 +15,19 @@ contract Market is ReentrancyGuard {
     uint256 public yesShares;
     uint256 public noShares;
 
-    IERC20 public collateralToken;
+    IERC20 public immutable collateralToken;
 
     // Track user's shares for each outcome
     mapping(address => mapping(bool => uint256)) public userShares;
 
     event BetPlaced(address user, bool prediction, uint256 amount);
     event MarketResolved(bool outcome);
+    event WinningsClaimed(address indexed user, uint256 amount);
 
-    constructor(string memory _question, uint256 _endTime, address _creator, address _collateralToken) {
+    constructor(string memory _question, uint256 _endTime, address _collateralToken) Ownable(msg.sender) {
+        require(_endTime > block.timestamp, "End time must be in the future");
         question = _question;
         endTime = _endTime;
-        creator = _creator;
         collateralToken = IERC20(_collateralToken);
     }
 
@@ -45,8 +46,7 @@ contract Market is ReentrancyGuard {
         emit BetPlaced(msg.sender, _prediction, _amount);
     }
 
-    function resolveMarket(bool _outcome) external {
-        require(msg.sender == creator, "Only creator can resolve");
+    function resolveMarket(bool _outcome) external onlyOwner {
         require(block.timestamp >= endTime, "Market hasn't closed yet");
         require(!resolved, "Market already resolved");
 
@@ -67,8 +67,20 @@ contract Market is ReentrancyGuard {
 
         userShares[msg.sender][outcome] = 0;
         require(collateralToken.transfer(msg.sender, winnings), "Transfer Failed");
+        
+        emit WinningsClaimed(msg.sender, winnings);
     }
 
+    function getMarketInfo() external view returns (
+        string memory _question,
+        uint256 _endTime,
+        bool _resolved,
+        bool _outcome,
+        uint256 _yesShares,
+        uint256 _noShares
+    ) {
+        return (question, endTime, resolved, outcome, yesShares, noShares);
+    }
     
 
 }
