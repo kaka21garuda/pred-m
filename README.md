@@ -111,50 +111,6 @@ This diagram illustrates the main flows in the prediction market application:
 4. Market Resolution: The market is resolved by setting the outcome.
 5. Claiming Winnings: Users can claim their winnings if they bet correctly.
 
-## Components Flow
-
-```mermaid
-graph TD
-    A[User] --> B{Action?}
-    B -->|Create Market| C[MarketFactory Contract]
-    C --> D[Create new Market Contract]
-    D --> E[Emit MarketCreated Event]
-    E --> F[Off-chain Service]
-    F --> G[Update Merkle Root]
-
-    B -->|Add Liquidity| H[AMM Contract]
-    H --> I[Transfer Collateral]
-    I --> J[Update Liquidity Pools]
-
-    B -->|Buy Tokens| K[AMM Contract]
-    K --> L[Calculate Cost]
-    L --> M[Transfer Collateral]
-    M --> N[Update Liquidity Pools]
-    N --> O[Place Bet on Market Contract]
-
-    B -->|Sell Tokens| P[AMM Contract]
-    P --> Q[Calculate Payout]
-    Q --> R[Update Liquidity Pools]
-    R --> S[Transfer Payout]
-
-    B -->|Resolve Market| T[Market Contract]
-    T --> U[Set Outcome]
-    U --> V[Allow Claiming]
-
-    B -->|Claim Winnings| W[Market Contract]
-    W --> X[Verify Outcome]
-    X --> Y[Transfer Winnings]
-
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#ccf,stroke:#333,stroke-width:2px
-    style C fill:#cfc,stroke:#333,stroke-width:2px
-    style H fill:#cfc,stroke:#333,stroke-width:2px
-    style K fill:#cfc,stroke:#333,stroke-width:2px
-    style P fill:#cfc,stroke:#333,stroke-width:2px
-    style T fill:#cfc,stroke:#333,stroke-width:2px
-    style W fill:#cfc,stroke:#333,stroke-width:2px
-```
-
 ## Setup and Installation
 
 1. Clone the repository:
