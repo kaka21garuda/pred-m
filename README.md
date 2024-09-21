@@ -6,12 +6,13 @@
 2. [Features](#features)
 3. [Technology Stack](#technology-stack)
 4. [Smart Contract Architecture](#smart-contract-architecture)
-5. [Setup and Installation](#setup-and-installation)
-6. [Usage](#usage)
-7. [Testing](#testing)
-8. [Deployment](#deployment)
-9. [Contributing](#contributing)
-10. [License](#license)
+5. [Application Flow](#application-flow)
+6. [Setup and Installation](#setup-and-installation)
+7. [Usage](#usage)
+8. [Testing](#testing)
+9. [Deployment](#deployment)
+10. [Contributing](#contributing)
+11. [License](#license)
 
 ## Project Overview
 
@@ -45,28 +46,74 @@ This project is a decentralized prediction market platform inspired by Polymarke
 4. `Oracle.sol`: Interface for interacting with UMA's Optimistic Oracle
 5. `TokenInterface.sol`: For interacting with the stablecoin (e.g., USDC)
 
+## Application Flow
+
+```mermaid
+graph TD
+    A[User] --> B{Action?}
+    B -->|Create Market| C[MarketFactory Contract]
+    C --> D[Create new Market Contract]
+    D --> E[Emit MarketCreated Event]
+    E --> F[Off-chain Service]
+    F --> G[Update Merkle Root]
+
+    B -->|Add Liquidity| H[AMM Contract]
+    H --> I[Transfer Collateral]
+    I --> J[Update Liquidity Pools]
+
+    B -->|Buy Tokens| K[AMM Contract]
+    K --> L[Calculate Cost]
+    L --> M[Transfer Collateral]
+    M --> N[Update Liquidity Pools]
+    N --> O[Place Bet on Market Contract]
+
+    B -->|Sell Tokens| P[AMM Contract]
+    P --> Q[Calculate Payout]
+    Q --> R[Update Liquidity Pools]
+    R --> S[Transfer Payout]
+
+    B -->|Resolve Market| T[Market Contract]
+    T --> U[Set Outcome]
+    U --> V[Allow Claiming]
+
+    B -->|Claim Winnings| W[Market Contract]
+    W --> X[Verify Outcome]
+    X --> Y[Transfer Winnings]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#ccf,stroke:#333,stroke-width:2px
+    style C fill:#cfc,stroke:#333,stroke-width:2px
+    style H fill:#cfc,stroke:#333,stroke-width:2px
+    style K fill:#cfc,stroke:#333,stroke-width:2px
+    style P fill:#cfc,stroke:#333,stroke-width:2px
+    style T fill:#cfc,stroke:#333,stroke-width:2px
+    style W fill:#cfc,stroke:#333,stroke-width:2px
+```
+
+This diagram illustrates the main flows in the prediction market application:
+
+1. Market Creation: User creates a market through the MarketFactory.
+2. Liquidity Provision: User adds liquidity to the AMM.
+3. Token Trading: Users can buy or sell tokens through the AMM.
+4. Market Resolution: The market is resolved by setting the outcome.
+5. Claiming Winnings: Users can claim their winnings if they bet correctly.
+
 ## Setup and Installation
 
 1. Clone the repository:
-
    ```
    git clone https://github.com/yourusername/prediction-market.git
    cd prediction-market
    ```
-
 2. Install dependencies:
-
    ```
    npm install
    ```
-
 3. Create a `.env` file in the root directory and add your environment variables:
-
    ```
    ALCHEMY_API_KEY=your_alchemy_api_key
    PRIVATE_KEY=your_wallet_private_key
    ```
-
 4. Compile the smart contracts:
    ```
    npx hardhat compile
@@ -80,7 +127,6 @@ This project is a decentralized prediction market platform inspired by Polymarke
 const MarketFactory = await ethers.getContractFactory("MarketFactory");
 const marketFactory = await MarketFactory.deploy();
 await marketFactory.deployed();
-
 await marketFactory.createMarket(
   "Will ETH reach $5000 by end of 2023?",
   1672444800
@@ -92,7 +138,6 @@ await marketFactory.createMarket(
 ```javascript
 const Market = await ethers.getContractFactory("Market");
 const market = await Market.attach("DEPLOYED_MARKET_ADDRESS");
-
 await market.placeBet(true, { value: ethers.utils.parseEther("1") });
 ```
 
@@ -107,7 +152,6 @@ npx hardhat test
 ## Deployment
 
 1. Update the `hardhat.config.js` file with the network details.
-
 2. Deploy to the desired network:
    ```
    npx hardhat run scripts/deploy.js --network <network-name>
