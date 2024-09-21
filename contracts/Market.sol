@@ -24,7 +24,11 @@ contract Market is ReentrancyGuard, Ownable {
     event MarketResolved(bool outcome);
     event WinningsClaimed(address indexed user, uint256 amount);
 
-    constructor(string memory _question, uint256 _endTime, address _collateralToken) Ownable(msg.sender) {
+    constructor(
+        string memory _question,
+        uint256 _endTime,
+        address _collateralToken
+    ) Ownable(msg.sender) {
         require(_endTime > block.timestamp, "End time must be in the future");
         question = _question;
         endTime = _endTime;
@@ -34,7 +38,10 @@ contract Market is ReentrancyGuard, Ownable {
     function placeBet(bool _prediction, uint256 _amount) external nonReentrant {
         require(block.timestamp < endTime, "Market has closed");
         require(!resolved, "Market already resolved");
-        require((collateralToken.transferFrom(msg.sender, address(this), _amount)), "Transfer Failed");
+        require(
+            (collateralToken.transferFrom(msg.sender, address(this), _amount)),
+            "Transfer Failed"
+        );
 
         if (_prediction) {
             yesShares += _amount;
@@ -63,24 +70,30 @@ contract Market is ReentrancyGuard, Ownable {
         require(winningShares > 0, "No winnings to claim");
 
         uint256 totalShares = yesShares + noShares;
-        uint256 winnings = (winningShares * totalShares) / (outcome ? yesShares : noShares);
+        uint256 winnings = (winningShares * totalShares) /
+            (outcome ? yesShares : noShares);
 
         userShares[msg.sender][outcome] = 0;
-        require(collateralToken.transfer(msg.sender, winnings), "Transfer Failed");
-        
+        require(
+            collateralToken.transfer(msg.sender, winnings),
+            "Transfer Failed"
+        );
+
         emit WinningsClaimed(msg.sender, winnings);
     }
 
-    function getMarketInfo() external view returns (
-        string memory _question,
-        uint256 _endTime,
-        bool _resolved,
-        bool _outcome,
-        uint256 _yesShares,
-        uint256 _noShares
-    ) {
+    function getMarketInfo()
+        external
+        view
+        returns (
+            string memory _question,
+            uint256 _endTime,
+            bool _resolved,
+            bool _outcome,
+            uint256 _yesShares,
+            uint256 _noShares
+        )
+    {
         return (question, endTime, resolved, outcome, yesShares, noShares);
     }
-    
-
 }

@@ -48,14 +48,14 @@ This project is a decentralized prediction market platform inspired by Polymarke
 
 ## Application Flow
 
+<details>
+<summary>Click to expand the application flow diagram</summary>
 ```mermaid
 graph TD
     A[User] --> B{Action?}
     B -->|Create Market| C[MarketFactory Contract]
     C --> D[Create new Market Contract]
     D --> E[Emit MarketCreated Event]
-    E --> F[Off-chain Service]
-    F --> G[Update Merkle Root]
 
     B -->|Add Liquidity| H[AMM Contract]
     H --> I[Transfer Collateral]
@@ -80,15 +80,30 @@ graph TD
     W --> X[Verify Outcome]
     X --> Y[Transfer Winnings]
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#ccf,stroke:#333,stroke-width:2px
-    style C fill:#cfc,stroke:#333,stroke-width:2px
-    style H fill:#cfc,stroke:#333,stroke-width:2px
-    style K fill:#cfc,stroke:#333,stroke-width:2px
-    style P fill:#cfc,stroke:#333,stroke-width:2px
-    style T fill:#cfc,stroke:#333,stroke-width:2px
-    style W fill:#cfc,stroke:#333,stroke-width:2px
-```
+    E --> Z[Off-chain Service]
+    J --> Z
+    O --> Z
+    S --> Z
+    V --> Z
+    Z --> AA[Calculate New Merkle Root]
+    AA --> AB[Update Merkle Root on MarketFactory]
+
+    AC[Front-end / Other Services] --> AD[Verify Multiple Markets]
+    AD --> AE[Use Merkle Proof]
+    AE --> AF[Call verifyMarketsBatch on MarketFactory]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px,color:#000
+    style B fill:#ccf,stroke:#333,stroke-width:2px,color:#000
+    style C fill:#cfc,stroke:#333,stroke-width:2px,color:#000
+    style H fill:#cfc,stroke:#333,stroke-width:2px,color:#000
+    style K fill:#cfc,stroke:#333,stroke-width:2px,color:#000
+    style P fill:#cfc,stroke:#333,stroke-width:2px,color:#000
+    style T fill:#cfc,stroke:#333,stroke-width:2px,color:#000
+    style W fill:#cfc,stroke:#333,stroke-width:2px,color:#000
+    style Z fill:#fcf,stroke:#333,stroke-width:2px,color:#000
+    style AC fill:#cff,stroke:#333,stroke-width:2px,color:#000
+
+</details>```
 
 This diagram illustrates the main flows in the prediction market application:
 
