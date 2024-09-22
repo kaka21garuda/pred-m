@@ -4,10 +4,15 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./Market.sol";
+import "./AMM.sol";
 
 contract MarketFactory is Ownable {
     mapping(uint256 => address) public markets;
+    mapping(uint256 => address) public marketToAMM;
+
     uint256 public marketCount;
+    address public immutable collateralToken;
+    address public immutable umaOracle;
     bytes32 public marketsMerkleRoots;
 
     event MarketCreated(
@@ -15,23 +20,49 @@ contract MarketFactory is Ownable {
         address marketAddress,
         string question
     );
+    event AMMLinked(uint256 indexed marketId, address ammAddress);
+    event MerkleRootUpdated(bytes32 newRoot);
 
-    constructor() Ownable(msg.sender) {}
+    constructor(
+        address _collateralToken,
+        address _umaOracle
+    ) Ownable(msg.sender) {
+        collateralToken = _collateralToken;
+        umaOracle = _umaOracle;
+    }
 
     function createMarket(
         string memory _question,
-        uint256 _endTime,
-        address _collateralToken
+        uint256 _endTime
     ) external onlyOwner returns (uint256) {
         uint256 marketId = marketCount;
 
-        Market newMarket = new Market(_question, _endTime, _collateralToken);
+        Market newMarket = new Market(
+            _question,
+            _endTime,
+            collateralToken,
+            umaOracle
+        );
+
         markets[marketId] = address(newMarket);
         marketCount += 1;
 
         emit MarketCreated(marketId, address(newMarket), _question);
-
         return marketId;
+    }
+
+    function linkAMMToMarket(
+        uint256 _marketId,
+        address _ammAddress
+    ) external onlyOwner {
+        require(markets[_marketId] != address(0), "Market doesn't exist");
+        require(
+            marketToAMM[_marketId] == address(0),
+            "AMM already linked to this market"
+        );
+
+        marketToAMM[_marketId] = _ammAddress;
+        emit AMMLinked(_marketId, _ammAddress);
     }
 
     function getMarketAddress(
@@ -39,6 +70,11 @@ contract MarketFactory is Ownable {
     ) external view returns (address) {
         require(_marketId < marketCount, "Market does not exist");
         return markets[_marketId];
+    }
+
+    function getAMMAddress(uint256 _marketId) external view returns (address) {
+        require(_marketId < marketCount, "Market does not exist");
+        return marketToAMM[_marketId];
     }
 
     function getMarketCount() external view returns (uint256) {
@@ -69,6 +105,7 @@ contract MarketFactory is Ownable {
         bytes32 _newMerkleRoot
     ) external onlyOwner {
         marketsMerkleRoots = _newMerkleRoot;
+        emit MerkleRootUpdated(_newMerkleRoot);
     }
 
     // verification process is separate from the market creation process,
