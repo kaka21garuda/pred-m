@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
 
 const MarketSchema = new mongoose.Schema({
+  marketId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   question: {
     type: String,
     required: true,
+    unique: true,
   },
   endTime: {
     type: Date,
@@ -29,6 +35,18 @@ const MarketSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  ammAddress: {
+    type: String,
+    default: null,
+  },
+  collateralToken: {
+    type: String,
+    required: true,
+  },
+  oracleAddress: {
+    type: String,
+    required: true,
+  },
   oracleRequestId: {
     type: String,
     default: null,
@@ -37,6 +55,16 @@ const MarketSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('Market', MarketSchema);

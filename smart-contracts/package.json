@@ -8,11 +8,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.0.2",
     "hardhat": "^2.22.11",
     "solc": "^0.8.20"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "description": ""
 }

@@ -21,5 +21,6 @@ module.exports = {
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts"
-  }
+  },
+  resolveJsonModule: true
 };
